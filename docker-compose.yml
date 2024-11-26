@@ -1,0 +1,46 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: '3.1'
+services:
+    redis:
+        image: 'redis:alpine'
+
+    postgres:
+        image: 'postgres:15-alpine'
+        working_dir: /application
+        volumes:
+            - '.:/application'
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=9101721
+            - POSTGRES_DB=symfony-tutorial
+        ports:
+            - '31004:5432'
+
+    pgadmin:
+        image: 'dpage/pgadmin4:latest'
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@admin.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+        ports:
+            - '5050:80'
+        depends_on:
+            - postgres
+
+    webserver:
+        image: 'nginx:alpine'
+        working_dir: /application
+        volumes:
+            - '.:/application'
+            - './docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf'
+        ports:
+            - '80:80'
+
+    php-fpm:
+        build: docker/php-fpm
+        working_dir: /application
+        volumes:
+            - '.:/application'
+            - './docker/php-fpm/php-ini-overrides.ini:/etc/php/8.2/fpm/conf.d/99-overrides.ini'
+            - './docker/php-fpm/php-ini-overrides.ini:/etc/php/8.2/cli/conf.d/99-overrides.ini'
